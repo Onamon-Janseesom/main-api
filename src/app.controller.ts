@@ -1,7 +1,7 @@
 import { BookingDto } from './dto/booking.dto';
 import { StatusDto } from './dto/status.dto';
 import { UserDto } from './dto/user.dto';
-import { Controller, Get, Body, HttpStatus, Res, Post, Query, HttpService } from '@nestjs/common';
+import { Controller, Get, Body, HttpStatus, Res, Post, Query, HttpService, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 import { map } from 'rxjs/operators';
 import { response } from 'express';
@@ -106,7 +106,6 @@ export class AppController {
         map(response => response.data),
       ).toPromise();
     console.log(query2.content)
-    let status = "booking success"
     console.log("check")
     if(query1.content === "booking success" && query2.content === "booking success"){
       const result = await this.customerRepository.update({ userName: userName },
@@ -119,10 +118,15 @@ export class AppController {
         check = 'update failed'
       }
       console.log(check)
+
+      return res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        content: { "booking status": "test", "userName": params.userName, "flightNumber": params.flightNumber, "seat": params.seat, 
+          "hotelName": params.hotelName, "roomNumber": params.roomNumber },
+      });
     }
     else{
       if (query1.content === "booking failed" && query2.content === "booking success") {
-        status = "booking failed"
         let cancel1 = await this.http.post(`http://ec2-13-58-119-33.us-east-2.compute.amazonaws.com:4000/cancel-booking?hotelName=${hotelName}&roomNumber=${roomNumber}`,
           { headers: { 'Content-Type': 'application/json' } })
           .pipe(
@@ -131,7 +135,6 @@ export class AppController {
         console.log("h " + cancel1.content)
       }
       if (query2.content === "booking failed" && query1.content === "booking success") {
-        status = "booking failed"
         let cancel2 = await this.http.post(`http://ec2-18-219-205-234.us-east-2.compute.amazonaws.com:3000/cancel-booking?flightNumber=${flightNumber}&seat=${seatNo}`,
           { headers: { 'Content-Type': 'application/json' } })
           .pipe(
@@ -139,18 +142,15 @@ export class AppController {
           ).toPromise();
         console.log("f " + cancel2.content)
       }
-      if (query1.content === "booking failed" && query2.content === "booking failed") {
-        status = "booking failed"
-      }
+
       const result = await this.customerRepository.update({ userName: userName },
         { status: 'booking failed' });
-    }
-   
 
-    return res.status(HttpStatus.OK).json({
-      code: HttpStatus.OK,
-      content: { status },
-    });
+      return res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        content: { "booking status": "failed" },
+      });
+    }
   }
 
 
@@ -195,5 +195,4 @@ export class AppController {
       content: { status },
     });
   }
-
 }
