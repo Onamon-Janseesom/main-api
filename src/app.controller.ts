@@ -111,7 +111,7 @@ export class AppController {
       const result = await this.customerRepository.update({ userName: userName },
         { flightNumber: params.flightNumber, seat: params.seat, roomNumber: params.roomNumber, hotelName: params.hotelName, status: 'booking success' });
       let check;
-      if (result !== undefined) {
+      if (result != undefined) {
         check = 'update success'
       }
       else {
@@ -179,12 +179,12 @@ export class AppController {
         map(response => response.data),
       ).toPromise();
     console.log(query2.content)
-
+    
 
     let status = 'booking success'
 
     let del = await this.customerRepository.delete({ userName: params.userName, hotelName: params.hotelName, roomNumber: params.roomNumber, flightNumber: params.flightNumber, seat: params.seat});
-    if (del !== undefined) {
+    if (del != undefined) {
       status = 'cancel success'
     }
     else {
