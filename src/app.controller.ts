@@ -53,7 +53,7 @@ export class AppController {
   // }
 
   @Post('/create')
-  async createBooking(@Query() params: UserDto, @Res() res) {
+  async createBooking(@Body() params: UserDto, @Res() res) {
     console.log(params)
     let userName = params.userName
     console.log(userName)
@@ -82,7 +82,7 @@ export class AppController {
 
 
   @Post('/booking')
-  async flightBooking(@Query() params: BookingDto, @Res() res) {
+  async flightBooking(@Body() params: BookingDto, @Res() res) {
     console.log(params)
     let userName = params.userName
     let flightNumber = params.flightNumber
@@ -155,7 +155,7 @@ export class AppController {
 
 
   @Post('/cancel')
-  async cancelBooking(@Query() params: BookingDto, @Res() res) {
+  async cancelBooking(@Body() params: BookingDto, @Res() res) {
     console.log(params)
     let userName = params.userName
     let flightNumber = params.flightNumber
