@@ -29,27 +29,28 @@ export class AppController {
     });
   }
 
-  @Get('/status')
-  async status(@Query() params: StatusDto, @Res() res){
-    let flightNumber = params.flightNumber
-    let query1 = await this.http.get(`http://localhost:3000/flight?flightNumber=${flightNumber}`,
-      { headers: { 'Content-Type': 'application/json' } })
-      .pipe(
-          map(response => response.data),
-      ).toPromise();
+  // NOT USED
+  // @Get('/status')
+  // async status(@Query() params: StatusDto, @Res() res){
+  //   let flightNumber = params.flightNumber
+  //   let query1 = await this.http.get(`http://localhost:3000/flight?flightNumber=${flightNumber}`,
+  //     { headers: { 'Content-Type': 'application/json' } })
+  //     .pipe(
+  //         map(response => response.data),
+  //     ).toPromise();
 
-    let roomNumber = params.roomNumber
-    let query2 = await this.http.get(`http://localhost:4000/room?roomNumber=${roomNumber}`,
-      { headers: { 'Content-Type': 'application/json' } })
-      .pipe(
-          map(response => response.data),
-      ).toPromise();
+  //   let roomNumber = params.roomNumber
+  //   let query2 = await this.http.get(`http://localhost:4000/room?roomNumber=${roomNumber}`,
+  //     { headers: { 'Content-Type': 'application/json' } })
+  //     .pipe(
+  //         map(response => response.data),
+  //     ).toPromise();
 
-    return res.status(HttpStatus.OK).json({
-      code: HttpStatus.OK,
-      content: {'flight details' : query1.content, 'room details' : query2.content},
-    });
-  }
+  //   return res.status(HttpStatus.OK).json({
+  //     code: HttpStatus.OK,
+  //     content: {'flight details' : query1.content, 'room details' : query2.content},
+  //   });
+  // }
 
   @Post('/create')
   async createBooking(@Query() params: UserDto, @Res() res){
@@ -177,7 +178,7 @@ export class AppController {
   
     status = 'booking success'
 
-    const customer = await this.customerRepository.findOne({hotelName: params.hotelName, room: params.roomNumber,flightNumber: params.flightNumber, seat: params.seat});
+    const customer = await this.customerRepository.findOne({hotelName: params.hotelName, roomNumber: params.roomNumber,flightNumber: params.flightNumber, seat: params.seat});
     let del= await this.customerRepository.remove(customer );
     if(del != undefined){
       status = 'cancel success'

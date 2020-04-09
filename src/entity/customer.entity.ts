@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity({ name: 'customer'})
-export class FlightEntity {
+export class CustomerEntity {
     @PrimaryGeneratedColumn()
     cus_id: number;
 
