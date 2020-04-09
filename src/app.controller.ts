@@ -121,7 +121,7 @@ export class AppController {
 
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
-        content: { "booking status": "test", "userName": params.userName, "flightNumber": params.flightNumber, "seat": params.seat, 
+        content: { "booking status": "booking success", "userName": params.userName, "flightNumber": params.flightNumber, "seat": params.seat, 
           "hotelName": params.hotelName, "roomNumber": params.roomNumber },
       });
     }
