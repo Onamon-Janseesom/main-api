@@ -14,7 +14,7 @@ export class AppController {
   constructor(private readonly appService: AppService
     , private readonly http: HttpService,
     @InjectRepository(CustomerEntity)
-    private readonly customerRepository: Repository<CustomerEntity>) {}
+    private readonly customerRepository: Repository<CustomerEntity>) { }
 
   @Get()
   getHello(): string {
@@ -53,31 +53,36 @@ export class AppController {
   // }
 
   @Post('/create')
-  async createBooking(@Query() params: UserDto, @Res() res){
+  async createBooking(@Query() params: UserDto, @Res() res) {
     console.log(params)
     let userName = params.userName
     console.log(userName)
     let email = params.email
     let phone = params.phone
     console.log(email)
-    console.log(phone )
-    let cus = await this.customerRepository.create(params);
-    if(cus != undefined){
+    console.log(phone)
+    let newCustomer = new CustomerEntity();
+    newCustomer.userName = userName;
+    newCustomer.email = email;
+    newCustomer.phone = phone;
+    let cus = await this.customerRepository.save(newCustomer);
+    let status;
+    if (cus != undefined) {
       status = 'success'
     }
-    else{
+    else {
       status = 'failed'
     }
-  
-      return res.status(HttpStatus.OK).json({
-        code: HttpStatus.OK,
-        content: {status},
-      });
+
+    return res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      content: { status },
+    });
   }
 
 
   @Post('/booking')
-  async flightBooking(@Query() params: BookingDto, @Res() res){
+  async flightBooking(@Query() params: BookingDto, @Res() res) {
     console.log(params)
     let userName = params.userName
     let flightNumber = params.flightNumber
@@ -86,71 +91,71 @@ export class AppController {
     console.log(flightNumber)
     console.log(seatNo)
     let query1 = await this.http.post(`http://ec2-18-219-205-234.us-east-2.compute.amazonaws.com:3000/booking?flightNumber=${flightNumber}&seat=${seatNo}&userName=${userName}`,
-       { headers: { 'Content-Type': 'application/json' } })
-       .pipe(
-           map(response => response.data),
+      { headers: { 'Content-Type': 'application/json' } })
+      .pipe(
+        map(response => response.data),
       ).toPromise();
     console.log(query1.content)
     let roomNumber = params.roomNumber
     let hotelName = params.hotelName
     console.log(hotelName)
-    console.log(roomNumber )
+    console.log(roomNumber)
     let query2 = await this.http.post(`http://ec2-13-58-119-33.us-east-2.compute.amazonaws.com:4000/booking?hotelName=${hotelName}&roomNumber=${roomNumber}&userName=${userName}`,
-    { headers: { 'Content-Type': 'application/json' } })
-    .pipe(
+      { headers: { 'Content-Type': 'application/json' } })
+      .pipe(
         map(response => response.data),
-   ).toPromise();
-      console.log(query2.content)
+      ).toPromise();
+    console.log(query2.content)
     let status = "booking success"
     console.log("check")
-    if(query1.content === "booking failed" && query2.content === "booking success" ){
-        status = "booking failed"
-        let cancel1 = await this.http.post(`http://ec2-13-58-119-33.us-east-2.compute.amazonaws.com:4000/cancel-booking?hotelName=${hotelName}&roomNumber=${roomNumber}`,
-       { headers: { 'Content-Type': 'application/json' } })
-       .pipe(
-           map(response => response.data),
-      ).toPromise();
-      console.log("h "+cancel1.content)    
-    }
-    if(query2.content === "booking failed" && query1.content === "booking success" ){
-      status = "booking failed"
-      let cancel2 = await this.http.post(`http://ec2-18-219-205-234.us-east-2.compute.amazonaws.com:3000/cancel-booking?flightNumber=${flightNumber}&seat=${seatNo}`,
-     { headers: { 'Content-Type': 'application/json' } })
-     .pipe(
-         map(response => response.data),
-    ).toPromise();
-    console.log("f "+ cancel2.content)    
-  }
-  if(query1.content === "booking failed" && query2.content === "booking failed" ){
-    status = "booking failed"
-  }
-
-  const updateUser = await this.customerRepository.findOne({flightNumber: params.flightNumber, seat: params.seat});
-    updateUser.flightNumber = params.flightNumber;
-    updateUser.seat = params.seat;
-    updateUser.roomNumber = params.roomNumber;
-    updateUser.hotelName = params.hotelName;
-    updateUser.status = params.status;
-    const result = await this.customerRepository.save(updateUser);
-    let check;
-    if(result  != undefined){
-      check = 'cancel success'
+    if(query1.content === "booking success" && query2.content === "booking success"){
+      const result = await this.customerRepository.update({ userName: userName },
+        { flightNumber: params.flightNumber, seat: params.seat, roomNumber: params.roomNumber, hotelName: params.hotelName, status: 'booking success' });
+      let check;
+      if (result != undefined) {
+        check = 'update success'
+      }
+      else {
+        check = 'update failed'
+      }
+      console.log(check)
     }
     else{
-      check = 'cancel failed'
+      if (query1.content === "booking failed" && query2.content === "booking success") {
+        status = "booking failed"
+        let cancel1 = await this.http.post(`http://ec2-13-58-119-33.us-east-2.compute.amazonaws.com:4000/cancel-booking?hotelName=${hotelName}&roomNumber=${roomNumber}`,
+          { headers: { 'Content-Type': 'application/json' } })
+          .pipe(
+            map(response => response.data),
+          ).toPromise();
+        console.log("h " + cancel1.content)
+      }
+      if (query2.content === "booking failed" && query1.content === "booking success") {
+        status = "booking failed"
+        let cancel2 = await this.http.post(`http://ec2-18-219-205-234.us-east-2.compute.amazonaws.com:3000/cancel-booking?flightNumber=${flightNumber}&seat=${seatNo}`,
+          { headers: { 'Content-Type': 'application/json' } })
+          .pipe(
+            map(response => response.data),
+          ).toPromise();
+        console.log("f " + cancel2.content)
+      }
+      if (query1.content === "booking failed" && query2.content === "booking failed") {
+        status = "booking failed"
+      }
+      const result = await this.customerRepository.update({ userName: userName },
+        { status: 'booking failed' });
     }
-  
-  
+   
 
-      return res.status(HttpStatus.OK).json({
-        code: HttpStatus.OK,
-        content: {status},
-      });
+    return res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      content: { status },
+    });
   }
-  
 
- @Post('/cancel')
-  async cancelBooking(@Query() params: BookingDto, @Res() res){
+
+  @Post('/cancel')
+  async cancelBooking(@Query() params: BookingDto, @Res() res) {
     console.log(params)
     let userName = params.userName
     let flightNumber = params.flightNumber
@@ -159,37 +164,36 @@ export class AppController {
     console.log(flightNumber)
     console.log(seatNo)
     let query1 = await this.http.post(`http://ec2-18-219-205-234.us-east-2.compute.amazonaws.com:3000/cancel-booking?flightNumber=${flightNumber}&seat=${seatNo}`,
-       { headers: { 'Content-Type': 'application/json' } })
-       .pipe(
-           map(response => response.data),
+      { headers: { 'Content-Type': 'application/json' } })
+      .pipe(
+        map(response => response.data),
       ).toPromise();
     console.log(query1.content)
     let roomNumber = params.roomNumber
     let hotelName = params.hotelName
     console.log(hotelName)
-    console.log(roomNumber )
-    let query2 = await this.http.post(`http://ec2-18-219-205-234.us-east-2.compute.amazonaws.com:3000/cancel-booking?flightNumber=${flightNumber}&seat=${seatNo}`,
-    { headers: { 'Content-Type': 'application/json' } })
-    .pipe(
+    console.log(roomNumber)
+    let query2 = await this.http.post(`http://ec2-13-58-119-33.us-east-2.compute.amazonaws.com:4000/cancel-booking?hotelName=${hotelName}&roomNumber=${roomNumber}`,
+      { headers: { 'Content-Type': 'application/json' } })
+      .pipe(
         map(response => response.data),
-   ).toPromise();
-   console.log(query2.content)
+      ).toPromise();
+    console.log(query2.content)
 
-  
-    status = 'booking success'
 
-    const customer = await this.customerRepository.findOne({hotelName: params.hotelName, roomNumber: params.roomNumber,flightNumber: params.flightNumber, seat: params.seat});
-    let del= await this.customerRepository.remove(customer );
-    if(del != undefined){
+    let status = 'booking success'
+
+    let del = await this.customerRepository.delete({ userName: params.userName, hotelName: params.hotelName, roomNumber: params.roomNumber, flightNumber: params.flightNumber, seat: params.seat});
+    if (del != undefined) {
       status = 'cancel success'
     }
-    else{
+    else {
       status = 'cancel failed'
     }
-      return res.status(HttpStatus.OK).json({
-        code: HttpStatus.OK,
-        content: {status},
-      });
+    return res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      content: { status },
+    });
   }
 
 }
