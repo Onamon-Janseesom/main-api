@@ -121,7 +121,7 @@ export class AppController {
 
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
-        content: { "booking status": "booking success", "userName": params.userName, "flightNumber": params.flightNumber, "seat": params.seat, 
+        content: { "status": "booking success", "userName": params.userName, "flightNumber": params.flightNumber, "seat": params.seat, 
           "hotelName": params.hotelName, "roomNumber": params.roomNumber },
       });
     }
@@ -148,7 +148,7 @@ export class AppController {
 
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
-        content: { "booking status": "failed" },
+        content: { "status": "failed" },
       });
     }
   }
